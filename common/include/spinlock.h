@@ -7,8 +7,6 @@
 #ifndef _SPINLOCK_H
 #define _SPINLOCK_H
 
-#include <errno.h>
-
 #include "api.h"
 #include "cpu.h"
 #include "log.h"
@@ -125,7 +123,7 @@ out:
  * \param  lock        The lock.
  * \param  iterations  Number of iterations (tries) after which this function times out.
  *
- * \returns  0 if acquiring the lock succeeded, -EAGAIN if timed out.
+ * \returns  0 if acquiring the lock succeeded, negative if timed out.
  */
 static inline int spinlock_lock_timeout(spinlock_t* lock, unsigned long iterations) {
     uint32_t val;
@@ -139,7 +137,7 @@ static inline int spinlock_lock_timeout(spinlock_t* lock, unsigned long iteratio
         /* This check imposes no inter-thread ordering, thus does not slow other threads. */
         while (__atomic_load_n(&lock->lock, __ATOMIC_RELAXED) != SPINLOCK_UNLOCKED) {
             if (iterations == 0) {
-                return -EAGAIN;
+                return -1;
             }
             iterations--;
             CPU_RELAX();
